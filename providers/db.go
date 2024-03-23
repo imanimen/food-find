@@ -23,6 +23,7 @@ func NewDatabase(config IConfig) IDatabase {
 	}
 
 	db.AutoMigrate(&models.Place{})
+	db.AutoMigrate(&models.User{})
 
 	return &Database{
 		Connection: db,
