@@ -22,6 +22,7 @@ type IDatabase interface {
 	* User Area
 	*/
 	getUserByID(id string) (*models.User, error)
+	updateProfile(user *models.User) (*models.User,error)
 
 }
 
@@ -49,9 +50,6 @@ func NewDatabase(config IConfig) IDatabase {
 // sendOTP generates a new OTP code for the provided email address.
 // It creates a new user record if one doesn't exist.
 // It returns the OTP code, expiration time, and any error.
-/*
-*
- */
 func (database *Database) sendOTP(email string) (string, string, error) {
 	var user models.User
 	err := database.Connection.Where("email = ?", email).First(&user).Error
@@ -154,4 +152,13 @@ func (database *Database) getUserByID(id string) (*models.User, error) {
 		return nil, err
 	}
 	return &user, nil
+}
+// updateProfile updates a user's profile in the database.
+// It takes a pointer to the user struct as input and returns any error encountered during the update process.
+func (database *Database) updateProfile(user *models.User) (*models.User,error) {
+	err := database.Connection.Save(user).Error
+	if err != nil {
+		return nil, err
+	}
+	return user, nil
 }

@@ -14,7 +14,12 @@ type IApi interface {
 	*/
 	SendCode(c *gin.Context)
 	VerifyCode(c *gin.Context)
+
+	/*
+	* Profile Area
+	*/
 	Me(c *gin.Context)
+	UpdateProfile(c *gin.Context)
 
 }
 
@@ -99,6 +104,59 @@ func (api *Api) Me(c *gin.Context) {
 		})
 	}
 	user, _ := api.Database.getUserByID(id)
+	c.JSON(http.StatusOK, gin.H{
+		"version": api.Config.Get("apiVersion"),
+		"data":    user,
+	})
+}
+
+// UpdateProfile updates the profile information for the user with the given ID.
+// It takes the ID, latitude, longitude, and username from the request and updates
+// the corresponding fields in the user object. It returns the updated user object
+// on success. Returns 422 if ID is missing. Returns 500 on error retrieving user
+// or updating profile.
+func (api *Api) UpdateProfile(c *gin.Context) {
+	id := c.PostForm("id")
+	if id == "" {
+		c.JSON(http.StatusUnprocessableEntity, gin.H{
+			"error": "id is required",
+		})
+		return
+	}
+
+	// Parse update data from request body
+	lat := c.PostForm("lat")
+	long := c.PostForm("long")
+	username := c.PostForm("username")
+
+	// Validate input
+	if lat == "" || long == "" || username == "" {
+		c.JSON(http.StatusUnprocessableEntity, gin.H{
+			"error": "lat, long, and username are required fields",
+		})
+		return
+	}
+
+	user, err := api.Database.getUserByID(id)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"error": "Failed to retrieve user data",
+		})
+		return
+	}
+
+	user.Lat = lat
+	user.Long = long
+	user.Username = username
+
+	user, err = api.Database.updateProfile(user)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"error": "Failed to update user profile",
+		})
+		return
+	}
+
 	c.JSON(http.StatusOK, gin.H{
 		"version": api.Config.Get("apiVersion"),
 		"data":    user,

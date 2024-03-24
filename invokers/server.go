@@ -28,5 +28,6 @@ func InitRoutes(engine *gin.Engine, api providers.IApi) {
 	engine.GET("/", api.Welcome)
 	engine.POST("/auth/send-code", api.SendCode)
 	engine.POST("/auth/verify-code", api.VerifyCode)
-	engine.GET("/profile/:id", api.Me)
+	engine.GET("/profile/me/:id", api.Me)
+	engine.POST("/profile/update", api.UpdateProfile)
 } 
