@@ -13,13 +13,13 @@ type IApi interface {
 
 	/*
 	* Authorization API
-	 */
+	*/
 	SendCode(c *gin.Context)
 	VerifyCode(c *gin.Context)
 
 	/*
 	* Profile Area
-	 */
+	*/
 	Me(c *gin.Context)
 	UpdateProfile(c *gin.Context)
 }
