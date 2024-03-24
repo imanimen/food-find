@@ -10,7 +10,7 @@ import (
 // container using fx.New, registers providers and invokers, and starts the server.
 func main() {
 	fx.New(
-		fx.Provide(providers.NewConfig, providers.NewDatabase, providers.NewApi),
+		fx.Provide(providers.NewConfig, providers.NewDatabase, providers.NewApi, providers.NewValidations),
 		fx.Invoke(invokers.ApiServer),
 	).Run()
 }

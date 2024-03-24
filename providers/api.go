@@ -28,13 +28,15 @@ type IApi interface {
 type Api struct {
 	Config   IConfig
 	Database IDatabase
+	Validations IValidations
 }
 
 // NewApi creates a new Api instance with the given config and database.
-func NewApi(config IConfig, database IDatabase) IApi {
+func NewApi(config IConfig, database IDatabase, validation IValidations) IApi {
 	return &Api{
 		Config:   config,
 		Database: database,
+		Validations: validation,
 	}
 }
 
@@ -50,11 +52,18 @@ func (api *Api) Welcome(c *gin.Context) {
 // the code, expiration time, and any error.
 func (api *Api) SendCode(c *gin.Context) {
 	email := c.PostForm("email")
+	if !api.Validations.IsValidEmail(email) {
+		c.JSON(http.StatusUnprocessableEntity, gin.H{
+			"error": "Invalid email format",
+		})
+		return
+	}
 	code, expireAt, err := api.Database.sendOTP(email)
 	// TODO: error handle the channel
 	// go func() {
 	// 	services.Call(api.Config.Get("NOTIFY_API_URL") + "/v1/notify", "POST", payloadData)
 	// }()
+
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{
 			"error": err.Error(),
@@ -74,6 +83,12 @@ func (api *Api) SendCode(c *gin.Context) {
 func (api *Api) VerifyCode(c *gin.Context) {
 	email := c.PostForm("email")
 	code := c.PostForm("code")
+	if !api.Validations.IsValidEmail(email) {
+		c.JSON(http.StatusUnprocessableEntity, gin.H{
+			"error": "Invalid email format",
+		})
+		return
+	}
 	result, err := api.Database.verifyCode(email, code)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{
