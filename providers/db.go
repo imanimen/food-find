@@ -11,11 +11,18 @@ import (
 )
 
 type IDatabase interface {
+	
 	/*
 	* Auth Methods
 	*/
 	sendOTP(email string) (string, string, error)
 	verifyCode(email, code string) (string, error)
+
+	/*
+	* User Area
+	*/
+	getUserByID(id string) (*models.User, error)
+
 }
 
 type Database struct {
@@ -39,17 +46,22 @@ func NewDatabase(config IConfig) IDatabase {
 	}
 }
 
-
+// sendOTP generates a new OTP code for the provided email address.
+// It creates a new user record if one doesn't exist.
+// It returns the OTP code, expiration time, and any error.
+/*
+*
+ */
 func (database *Database) sendOTP(email string) (string, string, error) {
 	var user models.User
 	err := database.Connection.Where("email = ?", email).First(&user).Error
 	if err != nil {
 		if err == gorm.ErrRecordNotFound {
 			newUser := models.User{
-				ID:    uuid.New().String(),
-				Email: email,
-				Lat: "0",
-				Long: "0",
+				ID:        uuid.New().String(),
+				Email:     email,
+				Lat:       "0",
+				Long:      "0",
 				CreatedAt: time.Now().Format(time.RFC3339),
 				UpdatedAt: time.Now().Format(time.RFC3339),
 			}
@@ -102,7 +114,9 @@ func (database *Database) sendOTP(email string) (string, string, error) {
 
 	return newCode, expirationTime, nil
 }
-
+// verifyCode verifies the provided OTP code matches the one stored for the
+// provided email address. It clears the stored OTP code after verifying.
+// It returns the user ID and any error.
 func (database *Database) verifyCode(email, code string) (string, error) {
 	var otp models.OTP
 	err := database.Connection.Where("email = ? AND code = ?", email, code).First(&otp).Error
@@ -126,4 +140,18 @@ func (database *Database) verifyCode(email, code string) (string, error) {
 	// }
 
 	return otp.UserID, nil
+}
+// getUserByID retrieves a user record from the database by ID.
+// It returns a pointer to the user struct and any error.
+// If no record is found, it returns a custom ErrRecordNotFound error.
+func (database *Database) getUserByID(id string) (*models.User, error) {
+	var user models.User
+	err := database.Connection.Where("id = ?", id).First(&user).Error
+	if err != nil {
+		if err == gorm.ErrRecordNotFound {
+			return nil, fmt.Errorf("record not found")
+		}
+		return nil, err
+	}
+	return &user, nil
 }
