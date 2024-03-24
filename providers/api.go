@@ -6,47 +6,48 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
+// IApi defines the interface for the API provider.
+// It contains endpoints for user authorization and profile management.
 type IApi interface {
 	Welcome(c *gin.Context)
 
 	/*
 	* Authorization API
-	*/
+	 */
 	SendCode(c *gin.Context)
 	VerifyCode(c *gin.Context)
 
 	/*
 	* Profile Area
-	*/
+	 */
 	Me(c *gin.Context)
 	UpdateProfile(c *gin.Context)
-
 }
 
+// Api holds the application dependencies.
 type Api struct {
-	Config      IConfig
-	Database    IDatabase
+	Config   IConfig
+	Database IDatabase
 }
 
+// NewApi creates a new Api instance with the given config and database.
 func NewApi(config IConfig, database IDatabase) IApi {
 	return &Api{
-		Config:      config,
-		Database:    database,
+		Config:   config,
+		Database: database,
 	}
 }
 
-
+// Welcome handles the /welcome API endpoint. It returns a simple JSON
+// response with the API version and a greeting message.
 func (api *Api) Welcome(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{
 		"version": api.Config.Get("apiVersion"),
 		"data":    "Hello World",
 	})
 }
-
-
 // SendCode sends an OTP code to the provided email address and returns
 // the code, expiration time, and any error.
-
 func (api *Api) SendCode(c *gin.Context) {
 	email := c.PostForm("email")
 	code, expireAt, err := api.Database.sendOTP(email)
@@ -67,12 +68,9 @@ func (api *Api) SendCode(c *gin.Context) {
 			"expire_at": expireAt,
 		},
 	})
-
 }
-
 // VerifyCode verifies the provided OTP code against the email address
-// and returns the result and any error.
-
+// and returns the result and any error
 func (api *Api) VerifyCode(c *gin.Context) {
 	email := c.PostForm("email")
 	code := c.PostForm("code")
@@ -88,10 +86,7 @@ func (api *Api) VerifyCode(c *gin.Context) {
 		"version": api.Config.Get("apiVersion"),
 		"data":    result,
 	})
-
 }
-
-
 // Me retrieves the user with the given ID from the database
 // and returns it in the response. Returns status code 200 and the
 // user data on success. Returns status code 422 if the ID is missing.
@@ -109,7 +104,6 @@ func (api *Api) Me(c *gin.Context) {
 		"data":    user,
 	})
 }
-
 // UpdateProfile updates the profile information for the user with the given ID.
 // It takes the ID, latitude, longitude, and username from the request and updates
 // the corresponding fields in the user object. It returns the updated user object

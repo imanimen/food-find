@@ -6,6 +6,8 @@ import (
 	"go.uber.org/fx"
 )
 
+// main is the entry point for the application. It initializes the dependency injection
+// container using fx.New, registers providers and invokers, and starts the server.
 func main() {
 	fx.New(
 		fx.Provide(providers.NewConfig, providers.NewDatabase, providers.NewApi),

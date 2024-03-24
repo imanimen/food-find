@@ -9,6 +9,12 @@ import (
 	"go.uber.org/fx"
 )
 
+// ApiServer initializes a Gin server, registers routes, starts it,
+// and manages its lifecycle.
+//
+// It takes a Lifecycle and Api interface, registers start/stop hooks
+// to start and stop the server, and returns the initialized Gin
+// engine instance.
 func ApiServer(lc fx.Lifecycle, api providers.IApi) *gin.Engine {
 	r := gin.Default()
 	lc.Append(fx.Hook{

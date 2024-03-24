@@ -8,6 +8,10 @@ import (
 	"net/http"
 )
 
+// Call makes an HTTP request to the provided URL and method with the given
+// payload. It returns the deserialized JSON response as a map[string]interface{}
+// and any error. The client and request are configured before sending. The
+// response body is closed after decoding.
 func Call(url string, method string, payload []byte /*authToken string*/) (map[string]interface{}, error) {
 	client := &http.Client{}
 	req, err := http.NewRequest(method, url, bytes.NewBuffer(payload))
