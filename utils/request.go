@@ -3,6 +3,7 @@ package utils
 import (
 	"bytes"
 	"encoding/json"
+	"fmt"
 	"io"
 	"log"
 	"net/http"
@@ -38,6 +39,8 @@ func Call(url string, method string, payload []byte /*authToken string*/) (map[s
 	if err != nil {
 		return nil, err
 	}
+
+	fmt.Println(result) // debug the result
 
 	return result, nil
 }
