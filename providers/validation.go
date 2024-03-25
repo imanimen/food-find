@@ -6,7 +6,6 @@ import (
 )
 
 
-
 type IValidations interface {
 	IsValidEmail(string) bool
 	IsValidMobile(string) bool
